@@ -10,6 +10,7 @@
 
 #include "Animation/AnimInstanceProxy.h"
 #include "OpenXRExpansionTypes.h"
+#include "OpenXRHandGestures.h"
 #include "Engine/DataAsset.h"
 
 #include "OpenXRHandPoseComponent.generated.h"
@@ -65,85 +66,6 @@ struct TStructOpsTypeTraits< FBPXRSkeletalRepContainer > : public TStructOpsType
 	};
 };
 
-USTRUCT(BlueprintType, Category = "VRGestures")
-struct OPENXREXPANSIONPLUGIN_API FOpenXRGestureFingerPosition
-{
-	GENERATED_BODY()
-public:
-
-	// The Finger index, not editable
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "VRGesture")
-		EXRHandJointType IndexType;
-
-	// The locational value of this element 0.f - 1.f
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
-		FVector Value;
-
-	// The threshold within which this finger value will be detected as matching (1.0 would be always matching, IE: finger doesn't count)
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture", meta = (ClampMin = "0.0", ClampMax = "100.0", UIMin = "0.0", UIMax = "100.0"))
-		float Threshold;
-
-	FOpenXRGestureFingerPosition(FVector TipLoc, EXRHandJointType Type)
-	{
-		IndexType = Type;
-		Value = TipLoc;
-		Threshold = 5.0f;
-	}
-	FOpenXRGestureFingerPosition()
-	{
-		IndexType = EXRHandJointType::OXR_HAND_JOINT_INDEX_TIP_EXT;
-		Value = FVector(0.f);
-		Threshold = 5.0f;
-	}
-};
-
-USTRUCT(BlueprintType, Category = "VRGestures")
-struct OPENXREXPANSIONPLUGIN_API FOpenXRGesture
-{
-	GENERATED_BODY()
-public:
-
-	// Name of the recorded gesture
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
-		FName Name;
-
-	// Samples in the recorded gesture
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
-		TArray<FOpenXRGestureFingerPosition> FingerValues;
-
-	FOpenXRGesture()
-	{
-		InitPoseValues();
-		Name = NAME_None;
-	}
-
-	void InitPoseValues()
-	{
-		FingerValues.Add(FOpenXRGestureFingerPosition(FVector::ZeroVector, EXRHandJointType::OXR_HAND_JOINT_THUMB_TIP_EXT));
-		FingerValues.Add(FOpenXRGestureFingerPosition(FVector::ZeroVector, EXRHandJointType::OXR_HAND_JOINT_INDEX_TIP_EXT));
-		FingerValues.Add(FOpenXRGestureFingerPosition(FVector::ZeroVector, EXRHandJointType::OXR_HAND_JOINT_MIDDLE_TIP_EXT));
-		FingerValues.Add(FOpenXRGestureFingerPosition(FVector::ZeroVector, EXRHandJointType::OXR_HAND_JOINT_RING_TIP_EXT));
-		FingerValues.Add(FOpenXRGestureFingerPosition(FVector::ZeroVector, EXRHandJointType::OXR_HAND_JOINT_LITTLE_TIP_EXT));
-	}
-};
-
-/**
-* Items Database DataAsset, here we can save all of our game items
-*/
-UCLASS(BlueprintType, Category = "VRGestures")
-class OPENXREXPANSIONPLUGIN_API UOpenXRGestureDatabase : public UDataAsset
-{
-	GENERATED_BODY()
-public:
-
-	// Gestures in this database
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGestures")
-		TArray <FOpenXRGesture> Gestures;
-
-	UOpenXRGestureDatabase()
-	{
-	}
-};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOpenXRGestureDetected, const FName &, GestureDetected, int32, GestureIndex, EVRSkeletalHandIndex, ActionHandType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOpenXRGestureEnded, const FName &, GestureEnded, int32, GestureIndex, EVRSkeletalHandIndex, ActionHandType);

@@ -3,19 +3,35 @@
 #include "OpenXRExpansionPlugin.h"
 #include "OpenXRExpansionFunctionLibrary.h"
 
+#include "OpenXRHandGestureDevice.h"
+
 #define LOCTEXT_NAMESPACE "FXRExpansionPluginModule"
+
 
 void FOpenXRExpansionPluginModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	//LoadOpenVRModule();
+	IInputDeviceModule::StartupModule();
 }
 
 void FOpenXRExpansionPluginModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-//	UnloadOpenVRModule();
+	IInputDeviceModule::ShutdownModule();
+}
+
+TSharedPtr<IInputDevice> FOpenXRExpansionPluginModule::CreateInputDevice(const TSharedRef<class FGenericApplicationMessageHandler>& InMessageHandler)
+{
+	TSharedPtr<FOpenXRHandGestureDevice> InputDevice(new FOpenXRHandGestureDevice(InMessageHandler));
+	HandGestureDevice = InputDevice;
+	return InputDevice;
+}
+
+TSharedPtr<IInputDevice> FOpenXRExpansionPluginModule::GetInputDevice() const
+{
+	if (HandGestureDevice.IsValid())
+	{
+		return HandGestureDevice.Pin();
+	}
+	return nullptr;
 }
 
 

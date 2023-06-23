@@ -201,7 +201,7 @@ void UOpenXRHandPoseComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 
 bool UOpenXRHandPoseComponent::SaveCurrentPose(FName RecordingName, EVRSkeletalHandIndex HandToSave)
 {
-
+	/*
 	if (!HandSkeletalActions.Num())
 		return false;
 
@@ -264,11 +264,15 @@ bool UOpenXRHandPoseComponent::SaveCurrentPose(FName RecordingName, EVRSkeletalH
 	}
 
 	return false;
+	*/
+
+	return false;
 }
 
 
 bool UOpenXRHandPoseComponent::K2_DetectCurrentPose(UPARAM(ref) FBPOpenXRActionSkeletalData& SkeletalAction, FOpenXRGesture & GestureOut)
 {
+	/*
 	if (!GesturesDB || GesturesDB->Gestures.Num() < 1)
 		return false;
 
@@ -335,10 +339,14 @@ bool UOpenXRHandPoseComponent::K2_DetectCurrentPose(UPARAM(ref) FBPOpenXRActionS
 	}
 
 	return false;
+	*/
+
+	return false;
 }
 
 bool UOpenXRHandPoseComponent::DetectCurrentPose(FBPOpenXRActionSkeletalData &SkeletalAction)
 {
+	/*
 	if (!GesturesDB || GesturesDB->Gestures.Num() < 1 || SkeletalAction.SkeletalTransforms.Num() < EHandKeypointCount)
 		return false;
 
@@ -424,6 +432,9 @@ bool UOpenXRHandPoseComponent::DetectCurrentPose(FBPOpenXRActionSkeletalData &Sk
 		SkeletalAction.LastHandGesture = NAME_None;
 		SkeletalAction.LastHandGestureIndex = INDEX_NONE;
 	}
+
+	return false;
+	*/
 
 	return false;
 }
