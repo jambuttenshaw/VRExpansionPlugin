@@ -119,4 +119,9 @@ public:
 	UOpenXRGestureDatabase()
 	{
 	}
+
+#if WITH_EDITOR
+	EDataValidationResult IsDataValid(class FDataValidationContext& Context) override;
+#endif
+
 };
