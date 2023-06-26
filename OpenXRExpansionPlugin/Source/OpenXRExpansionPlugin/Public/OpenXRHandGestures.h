@@ -9,15 +9,28 @@
 
 
 
-// finger state
 UENUM(BlueprintType)
 enum class EOpenXRGestureFingerState : uint8
 {
-	OXR_GESTURE_FINGER_INVALID = 0,
-	OXR_GESTURE_FINGER_IGNORED, 
-	OXR_GESTURE_FINGER_CLOSED,
-	OXR_GESTURE_FINGER_EXTENDED 
+	OXR_GESTURE_FINGER_INVALID = 0		UMETA(DisplayName = "Invalid"),
+	OXR_GESTURE_FINGER_IGNORED			UMETA(DisplayName = "Ignored"), 
+	OXR_GESTURE_FINGER_CLOSED			UMETA(DisplayName = "Closed"),
+	OXR_GESTURE_FINGER_EXTENDED			UMETA(DisplayName = "Extended"),
+	OXR_GESTURE_FINGER_PINCHED			UMETA(DisplayName = "Pinched")
 };
+
+
+UENUM(BlueprintType)
+enum class EOpenXRGestureHand : uint8
+{
+	OXR_GESTURE_HAND_INVALID = 0		UMETA(DisplayName = "Invalid"),
+	OXR_GESTURE_HAND_LEFT    = 0b01		UMETA(DisplayName = "Right Hand"),
+	OXR_GESTURE_HAND_RIGHT   = 0b10		UMETA(DisplayName = "Left Hand"),
+	OXR_GESTURE_HAND_ANY     = 0b11		UMETA(DisplayName = "Any Hand")
+};
+// Due to the nature of the enum, this is handy
+// e.g, instead of checking for either HAND_LEFT or HAND_ANY, can simply & HAND_LEFT
+bool operator& (EOpenXRGestureHand A, EOpenXRGestureHand B);
 
 
 USTRUCT(BlueprintType, Category = "VRGestures")
@@ -57,6 +70,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
 		FName Name;
 
+	// Display Name of this gesture
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+		FString DisplayName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+		EOpenXRGestureHand Hand;
+
 	// States of each finger in this gesture
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, EditFixedSize, Category = "VRGesture")
 		TArray<FOpenXRGestureFinger> FingerValues;
@@ -64,6 +84,9 @@ public:
 	FOpenXRGesture()
 	{
 		Name = NAME_None;
+		DisplayName = TEXT("None");
+		Hand = EOpenXRGestureHand::OXR_GESTURE_HAND_ANY;
+
 		InitPoseValues();
 	}
 

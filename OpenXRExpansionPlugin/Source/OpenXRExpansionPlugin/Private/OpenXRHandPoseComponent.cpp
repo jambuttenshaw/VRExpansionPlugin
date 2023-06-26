@@ -10,6 +10,10 @@
 #include "XRMotionControllerBase.h" // for GetHandEnumForSourceName()
 //#include "EngineMinimal.h"
 
+#include "Modules/ModuleManager.h"
+#include "IOpenXRExpansionPlugin.h"
+#include "OpenXRHandGestureDevice.h"
+
 UOpenXRHandPoseComponent::UOpenXRHandPoseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -121,6 +125,27 @@ void UOpenXRHandPoseComponent::BeginPlay()
 	}*/
 
 	Super::BeginPlay();
+
+	// Only register with device if this is on client
+	if (IsLocallyControlled())
+	{
+		// Attempt to get HandGestureDevice
+		TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice;
+		if (IOpenXRExpansionPluginModule::IsAvailable())
+		{
+			IOpenXRExpansionPluginModule& OpenXRExpansionModule = IOpenXRExpansionPluginModule::Get();
+			TSharedPtr<class IInputDevice> InputDevice = OpenXRExpansionModule.GetInputDevice();
+
+			if (InputDevice.IsValid())
+			{
+				HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice, class IInputDevice>(InputDevice);
+			}
+		}
+
+		// Register with HandGestureDevice
+		if (HandGestureDevice.IsValid())
+			HandGestureDevice->RegisterComponent(this);
+	}
 }
 
 void UOpenXRHandPoseComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
