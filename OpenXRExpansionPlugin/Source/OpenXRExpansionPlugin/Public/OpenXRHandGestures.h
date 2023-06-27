@@ -113,7 +113,7 @@ class OPENXREXPANSIONPLUGIN_API UOpenXRGestureDatabase : public UDataAsset
 public:
 
 	// Gestures in this database
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGestures")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "VRGestures")
 		TArray <FOpenXRGesture> Gestures;
 
 	UOpenXRGestureDatabase()

@@ -35,6 +35,24 @@ EDataValidationResult UOpenXRGestureDatabase::IsDataValid(FDataValidationContext
 			Context.AddError(LOCTEXT("InvalidHand", "Gesture is set to an invalid hand."));
 			Result = EDataValidationResult::Invalid;
 		}
+
+		bool AllIgnored = true;
+
+		for (const FOpenXRGestureFinger& Finger : Gesture.FingerValues)
+		{
+			AllIgnored &= Finger.FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_IGNORED;
+			
+			if (Finger.FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_INVALID)
+			{
+				Context.AddWarning(LOCTEXT("InvalidFinger", "Finger is set to an invalid state."));
+				Result = EDataValidationResult::Invalid;
+			}
+		}
+		if (AllIgnored)
+		{
+			Context.AddWarning(LOCTEXT("AllFingersIgnored", "All fingers are ignored: gesture is invalid."));
+			Result = EDataValidationResult::Invalid;
+		}
 	}
 
 	return Result;
