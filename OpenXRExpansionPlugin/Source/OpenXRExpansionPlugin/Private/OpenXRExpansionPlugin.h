@@ -18,6 +18,10 @@ public:
 	/** IOpenXRExpansionPluginModule implementation */
 	virtual TSharedPtr<IInputDevice> GetInputDevice() const override;
 
+
+	void RegisterSettings();
+	void UnregisterSettings();
+
 private:
 	TWeakPtr<class FOpenXRHandGestureDevice> HandGestureDevice;
 };

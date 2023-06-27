@@ -27,6 +27,14 @@ FOpenXRHandGestureDevice::~FOpenXRHandGestureDevice()
 void FOpenXRHandGestureDevice::Tick(float DeltaTime)
 {
 	CleanupInvalidComponents();
+
+	for (FOpenXRHandGestureInputState& RegisteredComponentState : RegisteredComponents)
+	{
+		if (RegisteredComponentState.IsValid()) // Should always be true: cleanup has just been performed
+		{
+			RegisteredComponentState.UpdateCurrentState(DeltaTime);
+		}
+	}
 }
 
 void FOpenXRHandGestureDevice::SendControllerEvents()
@@ -167,6 +175,7 @@ void FOpenXRHandGestureDevice::CleanupInvalidComponents()
 	}
 }
 
+
 void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& RegisteredComponentState)
 {
 	UOpenXRHandPoseComponent* HandPoseComponent = RegisteredComponentState.GetHandPoseComponent();
@@ -179,56 +188,13 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 	if (!(HandPoseComponent->GesturesDB))
 		return;
 
+	int SkeletalDataIndex = -1;
 	for (const FBPOpenXRActionSkeletalData& SkeletalAction : HandPoseComponent->HandSkeletalActions)
 	{
-		if (SkeletalAction.SkeletalTransforms.Num() < EHandKeypointCount)
-			return;
+		SkeletalDataIndex++;
 
-		// Get Current State
-		int32 FingerMap[5] =
-		{
-			(int32)EXRHandJointType::OXR_HAND_JOINT_THUMB_TIP_EXT,
-			(int32)EXRHandJointType::OXR_HAND_JOINT_INDEX_TIP_EXT,
-			(int32)EXRHandJointType::OXR_HAND_JOINT_MIDDLE_TIP_EXT,
-			(int32)EXRHandJointType::OXR_HAND_JOINT_RING_TIP_EXT,
-			(int32)EXRHandJointType::OXR_HAND_JOINT_LITTLE_TIP_EXT
-		};
-
-		FVector WristLoc = SkeletalAction.SkeletalTransforms[(int32)EXRHandJointType::OXR_HAND_JOINT_WRIST_EXT].GetLocation();
-
-		// Early fill in an array to keep from performing math for each gesture
-
-		// Get all finger tip locations
-		TArray<FVector> CurrentTipLocations;
-		CurrentTipLocations.AddUninitialized(5);
-		for (int i = 0; i < 5; ++i)
-			CurrentTipLocations[i] = SkeletalAction.SkeletalTransforms[FingerMap[i]].GetLocation() - WristLoc;
-
-		// TODO: These should be calculated / per finger
-		const float PinchThreshold = 1.0f;
-		const float ExtendedThreshold = 12.0f;
-
-		TArray<EOpenXRGestureFingerState> CurrentFingerStates;
-		CurrentFingerStates.AddUninitialized(5);
-
-		for (int i = 0; i < 5; ++i)
-		{
-			// Don't check if the thumb is pinched, check other fingers
-			if (i > 0)
-			{
-				if (FVector::DistSquared(CurrentTipLocations[0], CurrentTipLocations[i]) < PinchThreshold * PinchThreshold)
-				{
-					CurrentFingerStates[0] = EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED;
-					CurrentFingerStates[i] = EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED;
-					// A finger cannot be considered as extended or closed if it is pinched
-					continue;
-				}
-			}
-			 
-			// TODO: Investigate other ways of doing this, potentially rotation of base joint of fingers?
-			bool Extended = CurrentTipLocations[i].SquaredLength() > ExtendedThreshold * ExtendedThreshold;
-			CurrentFingerStates[i] = Extended ? EOpenXRGestureFingerState::OXR_GESTURE_FINGER_EXTENDED : EOpenXRGestureFingerState::OXR_GESTURE_FINGER_CLOSED;
-		}
+		// Get current state
+		FOpenXRHandGestureSkeletalDataState& CurrentState = RegisteredComponentState.GetSkeletalDataState(SkeletalDataIndex);
 
 		
 		// Check all gestures in the DB
@@ -238,7 +204,7 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 			FKey GestureKey;
 			bool FoundKey = GetGestureKey(Gesture, SkeletalAction.TargetHand, GestureKey);
 			if (!FoundKey)
-				return;
+				continue;
 
 			// Check gesture for match
 			bool Match = true;
@@ -248,7 +214,7 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 				if (Gesture.FingerValues[i].FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_IGNORED)
 					continue;
 
-				Match &= Gesture.FingerValues[i].FingerState == CurrentFingerStates[i];
+				Match &= Gesture.FingerValues[i].FingerState == CurrentState.GetFingerState(i);
 			}
 
 			// Get button state
