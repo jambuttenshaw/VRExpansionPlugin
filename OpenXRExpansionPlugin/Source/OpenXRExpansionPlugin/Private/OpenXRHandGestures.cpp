@@ -37,7 +37,7 @@ EDataValidationResult UOpenXRGestureDatabase::IsDataValid(FDataValidationContext
 		}
 	}
 
-	return ;
+	return Result;
 }
 
 #endif

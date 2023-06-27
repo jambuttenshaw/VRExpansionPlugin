@@ -24,8 +24,8 @@ UENUM(BlueprintType)
 enum class EOpenXRGestureHand : uint8
 {
 	OXR_GESTURE_HAND_INVALID = 0		UMETA(DisplayName = "Invalid"),
-	OXR_GESTURE_HAND_LEFT    = 0b01		UMETA(DisplayName = "Right Hand"),
-	OXR_GESTURE_HAND_RIGHT   = 0b10		UMETA(DisplayName = "Left Hand"),
+	OXR_GESTURE_HAND_LEFT    = 0b01		UMETA(DisplayName = "Left Hand"),
+	OXR_GESTURE_HAND_RIGHT   = 0b10		UMETA(DisplayName = "Right Hand"),
 	OXR_GESTURE_HAND_ANY     = 0b11		UMETA(DisplayName = "Any Hand")
 };
 // Due to the nature of the enum, this is handy

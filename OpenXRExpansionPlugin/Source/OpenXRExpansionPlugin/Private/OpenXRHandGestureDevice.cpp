@@ -78,6 +78,12 @@ void FOpenXRHandGestureDevice::InitKeynames()
 {
 	// Load key names for gestures
 
+	// Make sure this will only ever run once!
+	static bool hasInitKeynames = false;
+	if (hasInitKeynames)
+		return;
+	hasInitKeynames = true;
+
 	// Create category
 	EKeys::AddMenuCategoryDisplayInfo("HandGestures", LOCTEXT("HandGestureCategory", "Hand Gestures"), TEXT("GraphEditor.PadEvent_16x"));
 
@@ -112,7 +118,7 @@ void FOpenXRHandGestureDevice::InitKeynames()
 					{
 						FString GestureName = FString::Printf(TEXT("HandGesture_Left_%s"), *Gesture.Name.ToString());
 						FString GestureDisplayName = Gesture.DisplayName.Len() > 0
-							? FString::Printf(TEXT("%s Left Hand"), *Gesture.DisplayName) : GestureName;
+							? FString::Printf(TEXT("Hand Gesture (L) %s"), *Gesture.DisplayName) : GestureName;
 
 						// Create the key
 						FKey GestureKey(*GestureName);
@@ -130,7 +136,7 @@ void FOpenXRHandGestureDevice::InitKeynames()
 					{
 						FString GestureName = FString::Printf(TEXT("HandGesture_Right_%s"), *Gesture.Name.ToString());
 						FString GestureDisplayName = Gesture.DisplayName.Len() > 0
-							? FString::Printf(TEXT("%s Right Hand"), *Gesture.DisplayName) : GestureName;
+							? FString::Printf(TEXT("Hand Gesture (R) %s"), *Gesture.DisplayName) : GestureName;
 
 						// Create the key
 						FKey GestureKey(*GestureName);
