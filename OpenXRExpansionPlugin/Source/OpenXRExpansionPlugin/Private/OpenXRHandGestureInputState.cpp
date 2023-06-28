@@ -51,6 +51,7 @@ FOpenXRHandGestureInputState::FOpenXRHandGestureInputState(UOpenXRHandPoseCompon
 	}
 	// PlatformUserId will be default (invalid) if for some reason the device failed to get the local player
 
+	// Perhaps a better way to do this, but this does work for now
 	InputDeviceId = IPlatformInputDeviceMapper::Get().GetDefaultInputDevice();
 
 	GestureButtonStates.Empty();
@@ -84,6 +85,7 @@ void FOpenXRHandGestureInputState::SetGestureButtonState(const FName& GestureNam
 
 void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 {
+	// Registered component should be validated prior to attempting to update its state
 	check(IsValid());
 
 

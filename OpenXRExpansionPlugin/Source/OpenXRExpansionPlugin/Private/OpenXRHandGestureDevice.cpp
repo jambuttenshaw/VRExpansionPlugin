@@ -79,6 +79,8 @@ void FOpenXRHandGestureDevice::RegisterComponent(UOpenXRHandPoseComponent* HandP
 	// TODO: Add check to make sure that this component is not registered already
 
 	RegisteredComponents.Add(FOpenXRHandGestureInputState(HandPoseComponent));
+
+	UE_LOG(LogHandGesture, Log, TEXT("New HandPoseComponent registered with device"));
 }
 
 
@@ -171,7 +173,10 @@ void FOpenXRHandGestureDevice::CleanupInvalidComponents()
 		if (RegisteredComponents[i].IsValid())
 			i++;
 		else
+		{
 			RegisteredComponents.RemoveAt(i);
+			UE_LOG(LogHandGesture, Log, TEXT("Registered component became invalid and was cleaned up"));
+		}
 	}
 }
 

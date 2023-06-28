@@ -130,7 +130,6 @@ void UOpenXRHandPoseComponent::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		// Attempt to get HandGestureDevice
-		TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice;
 		if (IOpenXRExpansionPluginModule::IsAvailable())
 		{
 			IOpenXRExpansionPluginModule& OpenXRExpansionModule = IOpenXRExpansionPluginModule::Get();
@@ -138,13 +137,15 @@ void UOpenXRHandPoseComponent::BeginPlay()
 
 			if (InputDevice.IsValid())
 			{
-				HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice, class IInputDevice>(InputDevice);
+				TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice, class IInputDevice>(InputDevice);
+				// Register with HandGestureDevice
+				HandGestureDevice->RegisterComponent(this);
 			}
+			else
+				UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: device is invalid"));
 		}
-
-		// Register with HandGestureDevice
-		if (HandGestureDevice.IsValid())
-			HandGestureDevice->RegisterComponent(this);
+		else
+			UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: module not available"));
 	}
 }
 
