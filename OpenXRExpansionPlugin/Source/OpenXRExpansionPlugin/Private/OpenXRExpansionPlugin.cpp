@@ -5,7 +5,7 @@
 
 #include "OpenXRHandGestureDevice.h"
 
-#include "XRGlobalSettings.h"
+#include "OpenXRGlobalSettings.h"
 #include "ISettingsContainer.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
@@ -55,7 +55,7 @@ void FOpenXRExpansionPluginModule::RegisterSettings()
 		SettingsModule->RegisterSettings("Project", "Plugins", "XRExpansionPlugin",
 			LOCTEXT("XRExpansionSettingsName", "XRExpansion Settings"),
 			LOCTEXT("XRExpansionSettingsDescription", "Configure global settings for the XRExpansionPlugin"),
-			GetMutableDefault<UXRGlobalSettings>());
+			GetMutableDefault<UOpenXRGlobalSettings>());
 	}
 }
 

@@ -12,7 +12,7 @@
 UENUM(BlueprintType)
 enum class EOpenXRGestureFingerState : uint8
 {
-	OXR_GESTURE_FINGER_INVALID = 0		UMETA(DisplayName = "Invalid"),
+	OXR_GESTURE_FINGER_NONE = 0			UMETA(Hidden),
 	OXR_GESTURE_FINGER_IGNORED			UMETA(DisplayName = "Ignored"), 
 	OXR_GESTURE_FINGER_CLOSED			UMETA(DisplayName = "Closed"),
 	OXR_GESTURE_FINGER_EXTENDED			UMETA(DisplayName = "Extended"),
@@ -23,7 +23,7 @@ enum class EOpenXRGestureFingerState : uint8
 UENUM(BlueprintType)
 enum class EOpenXRGestureHand : uint8
 {
-	OXR_GESTURE_HAND_INVALID = 0		UMETA(DisplayName = "Invalid"),
+	OXR_GESTURE_HAND_INVALID = 0		UMETA(Hidden),
 	OXR_GESTURE_HAND_LEFT    = 0b01		UMETA(DisplayName = "Left Hand"),
 	OXR_GESTURE_HAND_RIGHT   = 0b10		UMETA(DisplayName = "Right Hand"),
 	OXR_GESTURE_HAND_ANY     = 0b11		UMETA(DisplayName = "Any Hand")
@@ -44,7 +44,7 @@ public:
 		EXRHandJointType IndexType;
 
 	// The state of the finger
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "VRGesture")
 		EOpenXRGestureFingerState FingerState;
 
 	FOpenXRGestureFinger(EOpenXRGestureFingerState State, EXRHandJointType Type)
@@ -55,7 +55,7 @@ public:
 	FOpenXRGestureFinger()
 	{
 		IndexType = EXRHandJointType::OXR_HAND_JOINT_INDEX_TIP_EXT;
-		FingerState = EOpenXRGestureFingerState::OXR_GESTURE_FINGER_INVALID;
+		FingerState = EOpenXRGestureFingerState::OXR_GESTURE_FINGER_NONE;
 	}
 };
 
@@ -67,18 +67,18 @@ struct OPENXREXPANSIONPLUGIN_API FOpenXRGesture
 public:
 
 	// Name of this gesture
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "VRGesture")
 		FName Name;
 
 	// Display Name of this gesture
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "VRGesture")
 		FString DisplayName;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGesture")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "VRGesture")
 		EOpenXRGestureHand Hand;
 
 	// States of each finger in this gesture
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, EditFixedSize, Category = "VRGesture")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, EditFixedSize, Category = "VRGesture")
 		TArray<FOpenXRGestureFinger> FingerValues;
 
 	FOpenXRGesture()

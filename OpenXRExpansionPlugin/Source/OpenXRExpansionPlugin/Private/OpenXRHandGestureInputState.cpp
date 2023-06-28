@@ -7,7 +7,7 @@
 #include "GameFramework/Pawn.h"
 #include "Engine/LocalPlayer.h"
 
-#include "XRGlobalSettings.h"
+#include "OpenXRGlobalSettings.h"
 
 
 FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
@@ -15,7 +15,7 @@ FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 	FilteredTipLocations.AddUninitialized(5);
 	CurrentFingerStates.AddDefaulted(5);
 
-	const UXRGlobalSettings& XRSettings = *GetDefault<UXRGlobalSettings>();
+	const UOpenXRGlobalSettings& XRSettings = *GetDefault<UOpenXRGlobalSettings>();
 	LocationFilteringCutoff = XRSettings.LowpassCutoffFrequency;
 }
 
@@ -108,10 +108,6 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 			CurrentState.UpdateTipLocation(i, SkeletalAction.SkeletalTransforms[FingerMap[i]].GetLocation() - WristLoc, DeltaTime);
 
 
-		// TODO: These should be calculated / defined per finger
-		const float PinchThreshold = 1.0f;
-		const float ExtendedThreshold = 12.0f;
-
 		for (int i = 0; i < 5; ++i)
 		{
 			FVector TipLocation = CurrentState.GetTipLocation(i);
@@ -119,7 +115,9 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 			// Don't check if the thumb is pinched, check other fingers
 			if (i > 0)
 			{
-				if (FVector::DistSquared(CurrentState.GetTipLocation(0), TipLocation) < PinchThreshold * PinchThreshold)
+				float PinchedThreshold;
+				UOpenXRGlobalSettings::GetPinchedThreshold(i, PinchedThreshold);
+				if (FVector::DistSquared(CurrentState.GetTipLocation(0), TipLocation) < PinchedThreshold * PinchedThreshold)
 				{
 					CurrentState.SetFingerState(0, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED);
 					CurrentState.SetFingerState(i, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED);
@@ -129,10 +127,16 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 			}
 
 			// TODO: Investigate other ways of doing this, potentially rotation of base joint of fingers?
-			bool Extended = TipLocation.SquaredLength() > ExtendedThreshold * ExtendedThreshold;
+			float ExtendedThreshold, ClosedThreshold;
+			UOpenXRGlobalSettings::GetExtendedThreshold(i, ExtendedThreshold);
+			UOpenXRGlobalSettings::GetClosedThreshold(i, ClosedThreshold);
 
-			CurrentState.SetFingerState(i, Extended ? EOpenXRGestureFingerState::OXR_GESTURE_FINGER_EXTENDED :
-													  EOpenXRGestureFingerState::OXR_GESTURE_FINGER_CLOSED);
+			if (TipLocation.SquaredLength() > ExtendedThreshold * ExtendedThreshold)
+				CurrentState.SetFingerState(i, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_EXTENDED);
+			else if (TipLocation.SquaredLength() < ClosedThreshold * ClosedThreshold)
+				CurrentState.SetFingerState(i, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_CLOSED);
+			else
+				CurrentState.SetFingerState(i, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_NONE);
 		}
 	}
 }

@@ -42,7 +42,7 @@ EDataValidationResult UOpenXRGestureDatabase::IsDataValid(FDataValidationContext
 		{
 			AllIgnored &= Finger.FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_IGNORED;
 			
-			if (Finger.FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_INVALID)
+			if (Finger.FingerState == EOpenXRGestureFingerState::OXR_GESTURE_FINGER_NONE)
 			{
 				Context.AddWarning(LOCTEXT("InvalidFinger", "Finger is set to an invalid state."));
 				Result = EDataValidationResult::Invalid;

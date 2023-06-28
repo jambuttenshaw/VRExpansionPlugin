@@ -28,7 +28,7 @@ public:
 	inline const T& GetOutput() const { return Output; }
 
 private:
-	T Output = default;
+	T Output;
 	float Factor = 0.0f;
 };
 
