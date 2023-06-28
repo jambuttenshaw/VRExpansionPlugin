@@ -11,8 +11,9 @@ class TOpenXRHandGestureLowPassFilter
 {
 public:
 	TOpenXRHandGestureLowPassFilter(const T& Default, float Cutoff, float DeltaTime)
+		: Output(Default),
+		  Factor(1.0f - FMath::Exp(-DeltaTime * 2.0f * PI * Cutoff))
 	{
-		Factor = 1.0f - FMath::Exp(-DeltaTime * 2.0f * PI * Cutoff);
 	}
 	
 	T Update(const T& Input)
