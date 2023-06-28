@@ -12,9 +12,11 @@
 
 FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 {
-	FilteredTipLocations.AddDefaulted(5);
-	for (const auto& TipLocation : FilteredTipLocations)
-		TipLocation.ResetOutput(FVector::Zero());
+	for (int i = 0; i < 5; i++)
+	{
+		// Cutoff and DeltaTime don't really matter, as they will be updated on the first tick
+		FilteredTipLocations.Emplace(FVector::ZeroVector, 1.0f, 0.01f);
+	}
 	CurrentFingerStates.AddDefaulted(5);
 
 	const UOpenXRGlobalSettings& XRSettings = *GetDefault<UOpenXRGlobalSettings>();

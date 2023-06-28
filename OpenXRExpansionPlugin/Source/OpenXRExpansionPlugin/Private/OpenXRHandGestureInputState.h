@@ -10,7 +10,7 @@ template <typename T>
 class TOpenXRHandGestureLowPassFilter
 {
 public:
-	TOpenXRHandGestureLowPassFilter(float Cutoff, float DeltaTime)
+	TOpenXRHandGestureLowPassFilter(const T& Default, float Cutoff, float DeltaTime)
 	{
 		Factor = 1.0f - FMath::Exp(-DeltaTime * 2.0f * PI * Cutoff);
 	}
@@ -26,10 +26,6 @@ public:
 	}
 	
 	inline const T& GetOutput() const { return Output; }
-	inline void ResetOutput(const T& Value) const
-	{
-		Output = Value;
-	}
 
 private:
 	T Output;
