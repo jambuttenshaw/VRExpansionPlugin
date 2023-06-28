@@ -26,6 +26,10 @@ public:
 	}
 	
 	inline const T& GetOutput() const { return Output; }
+	inline void ResetOutput(const T& Value) const
+	{
+		Output = Value;
+	}
 
 private:
 	T Output;

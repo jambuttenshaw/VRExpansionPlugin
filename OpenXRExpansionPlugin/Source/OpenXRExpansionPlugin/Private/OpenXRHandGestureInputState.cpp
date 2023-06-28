@@ -12,7 +12,9 @@
 
 FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 {
-	FilteredTipLocations.AddUninitialized(5);
+	FilteredTipLocations.AddDefaulted(5);
+	for (const auto& TipLocation : FilteredTipLocations)
+		TipLocation.ResetOutput(FVector::Zero());
 	CurrentFingerStates.AddDefaulted(5);
 
 	const UOpenXRGlobalSettings& XRSettings = *GetDefault<UOpenXRGlobalSettings>();
