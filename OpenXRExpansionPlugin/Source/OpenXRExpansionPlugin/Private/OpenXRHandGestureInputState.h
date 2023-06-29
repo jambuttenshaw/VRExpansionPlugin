@@ -107,5 +107,6 @@ private:
 	// Current hand state
 	TArray<FOpenXRHandGestureSkeletalDataState> SkeletalDataStates;
 	
+	// The states of all gesture buttons
 	TMap<FName, bool> GestureButtonStates;
 };

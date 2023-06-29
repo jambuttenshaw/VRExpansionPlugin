@@ -125,32 +125,35 @@ void UOpenXRHandPoseComponent::BeginPlay()
 	}*/
 
 	Super::BeginPlay();
-
-	// Only register with device if this is on client
-	if (IsLocallyControlled())
-	{
-		// Attempt to get HandGestureDevice
-		if (IOpenXRExpansionPluginModule::IsAvailable())
-		{
-			IOpenXRExpansionPluginModule& OpenXRExpansionModule = IOpenXRExpansionPluginModule::Get();
-			TSharedPtr<class IInputDevice> InputDevice = OpenXRExpansionModule.GetInputDevice();
-
-			if (InputDevice.IsValid())
-			{
-				TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice, class IInputDevice>(InputDevice);
-				// Register with HandGestureDevice
-				HandGestureDevice->RegisterComponent(this);
-			}
-			else
-				UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: device is invalid"));
-		}
-		else
-			UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: module not available"));
-	}
 }
 
-void UOpenXRHandPoseComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+void UOpenXRHandPoseComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	if (!bRegisteredWithHandGestureDevice)
+	{
+		// Only register with device if this is on client
+		if (IsLocallyControlled())
+		{
+			// Attempt to get HandGestureDevice
+			if (IOpenXRExpansionPluginModule::IsAvailable())
+			{
+				IOpenXRExpansionPluginModule& OpenXRExpansionModule = IOpenXRExpansionPluginModule::Get();
+				TSharedPtr<class IInputDevice> InputDevice = OpenXRExpansionModule.GetInputDevice();
+	
+				if (InputDevice.IsValid())
+				{
+					TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice, class	IInputDevice>(InputDevice);
+					// Register with HandGestureDevice
+					bRegisteredWithHandGestureDevice = HandGestureDevice->RegisterComponent(this);
+				}
+				else
+					UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: device is invalid"));
+			}
+			else
+				UE_LOG(LogHandGesture, Error, TEXT("Failed to register with device: module not available"));
+		}
+	}
+
 	if (!IsLocallyControlled())
 	{
 		if (bReplicateSkeletalData)

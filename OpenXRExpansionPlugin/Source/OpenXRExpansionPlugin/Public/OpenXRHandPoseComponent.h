@@ -224,6 +224,9 @@ public:
 	float SkeletalNetUpdateCount;
 	// Used in Tick() to accumulate before sending updates, didn't want to use a timer in this case, also used for remotes to lerp position
 	float SkeletalUpdateCount;
+
+private:
+	bool bRegisteredWithHandGestureDevice  = false;
 };	
 
 USTRUCT()

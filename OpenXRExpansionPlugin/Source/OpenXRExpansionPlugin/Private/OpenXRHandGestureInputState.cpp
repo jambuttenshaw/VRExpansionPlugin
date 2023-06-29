@@ -26,28 +26,49 @@ FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 
 FOpenXRHandGestureInputState::FOpenXRHandGestureInputState(UOpenXRHandPoseComponent* InHandPoseComponent)
 {
+	UE_LOG(LogHandGesture, Log, TEXT("Device registration: Creating state for new hand pose component."));
+
 	HandPoseComponent = InHandPoseComponent;
 
 	// We should always construct with a valid HandPoseComponent
 	// The HandPoseComponent is checked in the device registration, so if it gets this far it must be valid
 	check(HandPoseComponent.IsValid());
-	UOpenXRHandPoseComponent* HPC = HandPoseComponent.Get();
 
 	// Create an object to hold the state of each Skeletal Data structure in the component
-	for (int i = 0; i < HPC->HandSkeletalActions.Num(); i++)
+	for (int i = 0; i < InHandPoseComponent->HandSkeletalActions.Num(); i++)
 		SkeletalDataStates.Add(FOpenXRHandGestureSkeletalDataState());
 
 	// work out the platform user id from the HandPoseComponent
-	APawn* OwnerPawn = Cast<APawn>(HPC->GetOwner());
-	if (OwnerPawn)
+	AActor* Owner = InHandPoseComponent->GetOwner();
+	
+	if (Owner)
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(OwnerPawn->GetController());
+		// Traverse heirarchy to find top level owner
+		for (; Owner->GetOwner(); Owner = Owner->GetOwner())
+		{
+		}
+
+		// it SHOULD be a player controller
+		APlayerController* PlayerController = Cast<APlayerController>(Owner);
 		if (PlayerController)
 		{
 			ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer();
 			if (LocalPlayer)
 				PlatformUserId = LocalPlayer->GetPlatformUserId();
+			else
+			{
+				UE_LOG(LogHandGesture, Warning, TEXT("Device registration: Local player not found."));
+			}
 		}
+		else
+		{
+			FString ClassName = Owner->GetClass()->GetName();
+			UE_LOG(LogHandGesture, Warning, TEXT("Device registration: Top of owner hierarchy was not a player controller. Owner class name: %s"), *ClassName);
+		}
+	}
+	else
+	{
+		UE_LOG(LogHandGesture, Warning, TEXT("Device registration: component has no owner!"));
 	}
 	// PlatformUserId will be default (invalid) if for some reason the device failed to get the local player
 
@@ -57,18 +78,25 @@ FOpenXRHandGestureInputState::FOpenXRHandGestureInputState(UOpenXRHandPoseCompon
 	GestureButtonStates.Empty();
 
 	// Check GestureDB is valid
-	if (HPC->GesturesDB)
+	if (InHandPoseComponent->GesturesDB)
 	{
 		// Create Gesture Button States
-		for (const FOpenXRGesture& Gesture : HPC->GesturesDB->Gestures)
+		for (const FOpenXRGesture& Gesture : InHandPoseComponent->GesturesDB->Gestures)
 			GestureButtonStates.Add(Gesture.Name, false);
 	}
 
+	UE_LOG(LogHandGesture, Log, TEXT("Device registration: PlatformUserId valid: %d  Internal: %d"), PlatformUserId.IsValid(), PlatformUserId.GetInternalId());
+	UE_LOG(LogHandGesture, Log, TEXT("Device registration: InputDeviceId valid: %d"), InputDeviceId.IsValid());
+	UE_LOG(LogHandGesture, Log, TEXT("Device registration: Created %d gesture button states."), GestureButtonStates.Num());
+	
+	UE_LOG(LogHandGesture, Log, TEXT("Device registration complete."));
 }
 
 bool FOpenXRHandGestureInputState::IsValid() const
 {
-	return HandPoseComponent.IsValid();
+	return HandPoseComponent.IsValid()	&& 
+		   PlatformUserId.IsValid()		&& 
+		   InputDeviceId.IsValid();
 }
 
 bool FOpenXRHandGestureInputState::GetGestureButtonState(const FName& GestureName)
@@ -92,11 +120,18 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 	int SkeletalActionIndex = -1;
 	for (const FBPOpenXRActionSkeletalData& SkeletalAction : HandPoseComponent->HandSkeletalActions)
 	{
+		if (!SkeletalAction.bHasValidData)
+		{
+			continue;
+		}
+		if (SkeletalAction.SkeletalTransforms.Num() < EHandKeypointCount)
+		{
+			UE_LOG(LogHandGesture, Warning, TEXT("Invalid skeletal transform count!"));
+			continue;
+		}
+
 		SkeletalActionIndex++;
 		FOpenXRHandGestureSkeletalDataState& CurrentState = SkeletalDataStates[SkeletalActionIndex];
-
-		if (SkeletalAction.SkeletalTransforms.Num() < EHandKeypointCount)
-			continue;
 
 		int32 FingerMap[5] =
 		{
@@ -111,7 +146,10 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 
 		// Get all finger tip locations
 		for (int i = 0; i < 5; ++i)
-			CurrentState.UpdateTipLocation(i, SkeletalAction.SkeletalTransforms[FingerMap[i]].GetLocation() - WristLoc, DeltaTime);
+		{
+			FVector NewTipLocation = SkeletalAction.SkeletalTransforms[FingerMap[i]].GetLocation() - WristLoc;
+			CurrentState.UpdateTipLocation(i, NewTipLocation, DeltaTime);
+		}
 
 
 		for (int i = 0; i < 5; ++i)

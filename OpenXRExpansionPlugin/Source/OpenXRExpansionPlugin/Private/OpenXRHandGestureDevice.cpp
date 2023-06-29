@@ -71,16 +71,22 @@ void FOpenXRHandGestureDevice::SetChannelValues(int32 ControllerId, const FForce
 {
 }
 
-void FOpenXRHandGestureDevice::RegisterComponent(UOpenXRHandPoseComponent* HandPoseComponent)
+bool FOpenXRHandGestureDevice::RegisterComponent(UOpenXRHandPoseComponent* HandPoseComponent)
 {
 	if (!HandPoseComponent)
-		return;
+		return false;
 
 	// TODO: Add check to make sure that this component is not registered already
 
-	RegisteredComponents.Add(FOpenXRHandGestureInputState(HandPoseComponent));
+	FOpenXRHandGestureInputState NewInputState(HandPoseComponent);
+	if (!NewInputState.IsValid())
+		return false;
+
+	RegisteredComponents.Add(NewInputState);
 
 	UE_LOG(LogHandGesture, Log, TEXT("New HandPoseComponent registered with device"));
+
+	return true;
 }
 
 
@@ -120,14 +126,15 @@ void FOpenXRHandGestureDevice::InitKeynames()
 				//		HandGesture_Hand_GestureName
 				// Format for display name:
 				//		[GestureDisplayName] [Hand]
+				FString GestureName, GestureDisplayName;
 
 				// First, check if a left hand key should be created
 				if (Gesture.Hand & EOpenXRGestureHand::OXR_GESTURE_HAND_LEFT)
 				{
 					if (!LeftKeyMappings.Contains(Gesture.Name))
 					{
-						FString GestureName = FString::Printf(TEXT("HandGesture_Left_%s"), *Gesture.Name.ToString());
-						FString GestureDisplayName = Gesture.DisplayName.Len() > 0
+						GestureName = FString::Printf(TEXT("HandGesture_Left_%s"), *Gesture.Name.ToString());
+						GestureDisplayName = Gesture.DisplayName.Len() > 0
 							? FString::Printf(TEXT("Hand Gesture (L) %s"), *Gesture.DisplayName) : GestureName;
 
 						// Create the key
@@ -144,8 +151,8 @@ void FOpenXRHandGestureDevice::InitKeynames()
 				{
 					if (!RightKeyMappings.Contains(Gesture.Name))
 					{
-						FString GestureName = FString::Printf(TEXT("HandGesture_Right_%s"), *Gesture.Name.ToString());
-						FString GestureDisplayName = Gesture.DisplayName.Len() > 0
+						GestureName = FString::Printf(TEXT("HandGesture_Right_%s"), *Gesture.Name.ToString());
+						GestureDisplayName = Gesture.DisplayName.Len() > 0
 							? FString::Printf(TEXT("Hand Gesture (R) %s"), *Gesture.DisplayName) : GestureName;
 
 						// Create the key
@@ -156,6 +163,8 @@ void FOpenXRHandGestureDevice::InitKeynames()
 						RightKeyMappings.Add(Gesture.Name, GestureKey);
 					}
 				}
+
+				UE_LOG(LogHandGesture, Log, TEXT("Keys created for gesture '%s'"), *Gesture.Name.ToString());
 			}
 		}
 	}
@@ -228,7 +237,10 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 				if (!RegisteredComponentState.GetGestureButtonState(Gesture.Name))
 				{
 					RegisteredComponentState.SetGestureButtonState(Gesture.Name, true);
-					bool result = MessageHandler->OnControllerButtonPressed(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
+
+					bool Result = MessageHandler->OnControllerButtonPressed(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
+
+					UE_LOG(LogHandGesture, Log, TEXT("Gesture '%s' triggered. Result: %d"), *Gesture.Name.ToString(), Result);
 				}
 			}
 			else
@@ -236,11 +248,15 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 				if (RegisteredComponentState.GetGestureButtonState(Gesture.Name))
 				{
 					RegisteredComponentState.SetGestureButtonState(Gesture.Name, false);
-					bool result = MessageHandler->OnControllerButtonReleased(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
+
+					bool Result = MessageHandler->OnControllerButtonReleased(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
+
+					UE_LOG(LogHandGesture, Log, TEXT("Gesture '%s' released. Result: %d"), *Gesture.Name.ToString(), Result);
 				}
 			}
 		}
 	}
+	
 
 }
 

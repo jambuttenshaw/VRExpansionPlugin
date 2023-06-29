@@ -38,7 +38,7 @@ public:
 	// end IInputDevice implementation
 
 	// Register a new component with the device
-	void RegisterComponent(class UOpenXRHandPoseComponent* HandPoseComponent);
+	bool RegisterComponent(class UOpenXRHandPoseComponent* HandPoseComponent);
 
 private:
 
