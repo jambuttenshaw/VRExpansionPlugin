@@ -44,6 +44,7 @@ void FOpenXRHandGestureDevice::SendControllerEvents()
 	{
 		if (RegisteredComponentState.IsValid())
 		{
+
 			CheckForGestures(RegisteredComponentState);
 		}
 		else
@@ -81,6 +82,8 @@ bool FOpenXRHandGestureDevice::RegisterComponent(UOpenXRHandPoseComponent* HandP
 	FOpenXRHandGestureInputState NewInputState(HandPoseComponent);
 	if (!NewInputState.IsValid())
 		return false;
+
+	FSlateApplication::Get().SetUserFocusToGameViewport(NewInputState.GetPlatformUserId().GetInternalId());
 
 	RegisteredComponents.Add(NewInputState);
 
@@ -239,8 +242,6 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 					RegisteredComponentState.SetGestureButtonState(Gesture.Name, true);
 
 					bool Result = MessageHandler->OnControllerButtonPressed(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
-
-					UE_LOG(LogHandGesture, Log, TEXT("Gesture '%s' triggered. Result: %d"), *Gesture.Name.ToString(), Result);
 				}
 			}
 			else
@@ -250,8 +251,6 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 					RegisteredComponentState.SetGestureButtonState(Gesture.Name, false);
 
 					bool Result = MessageHandler->OnControllerButtonReleased(GestureKey.GetFName(), RegisteredComponentState.GetPlatformUserId(), RegisteredComponentState.GetInputDeviceId(), false);
-
-					UE_LOG(LogHandGesture, Log, TEXT("Gesture '%s' released. Result: %d"), *Gesture.Name.ToString(), Result);
 				}
 			}
 		}

@@ -72,8 +72,9 @@ FOpenXRHandGestureInputState::FOpenXRHandGestureInputState(UOpenXRHandPoseCompon
 	}
 	// PlatformUserId will be default (invalid) if for some reason the device failed to get the local player
 
-	// Perhaps a better way to do this, but this does work for now
-	InputDeviceId = IPlatformInputDeviceMapper::Get().GetDefaultInputDevice();
+	// Get input device id for user
+	InputDeviceId = IPlatformInputDeviceMapper::Get().GetPrimaryInputDeviceForUser(PlatformUserId);
+
 
 	GestureButtonStates.Empty();
 

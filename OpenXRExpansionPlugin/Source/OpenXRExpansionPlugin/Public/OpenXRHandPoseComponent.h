@@ -226,7 +226,7 @@ public:
 	float SkeletalUpdateCount;
 
 private:
-	bool bRegisteredWithHandGestureDevice  = false;
+	bool bRegisteredWithHandGestureDevice = false;
 };	
 
 USTRUCT()
