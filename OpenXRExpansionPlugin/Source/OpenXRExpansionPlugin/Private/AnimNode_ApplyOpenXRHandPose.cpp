@@ -230,6 +230,10 @@ void FAnimNode_ApplyOpenXRHandPose::ConvertHandTransformsSpace(TArray<FTransform
 			continue;
 		}
 
+		// Temporary Fix
+		WorldTransforms[Index].NormalizeRotation();
+		// End Temporary Fix
+
 		if (bMirrorLeftRight)
 		{
 			WorldTransforms[Index].Mirror(EAxis::Y, EAxis::Y);
