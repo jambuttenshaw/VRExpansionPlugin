@@ -2,36 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "OpenXRHandGestures.h"
-
-
-// A lowpass filter to remove high frequency movement from the hand data, to make detecting gestures more stable
-// Thanks to Jimmy Van den Berg for the implementation (https://github.com/jimmyberg/LowPassFilter)
-template <typename T>
-class TOpenXRHandGestureLowPassFilter
-{
-public:
-	TOpenXRHandGestureLowPassFilter(const T& Default, float Cutoff, float DeltaTime)
-		: Output(Default),
-		  Factor(1.0f - FMath::Exp(-DeltaTime * 2.0f * PI * Cutoff))
-	{
-	}
-	
-	T Update(const T& Input)
-	{
-		return Output += (Input - Output) * Factor;
-	}
-	T Update(const T& Input, float DeltaTime, float Cutoff)
-	{
-		Factor = 1.0f - FMath::Exp(-DeltaTime * 2.0f * PI * Cutoff);
-		return Output += (Input - Output) * Factor;
-	}
-	
-	inline const T& GetOutput() const { return Output; }
-
-private:
-	T Output;
-	float Factor = 0.0f;
-};
+#include "OpenXRHandGestureFilters.h"
 
 
 // Current values of a SkeletalAction
@@ -46,7 +17,7 @@ public:
 		check(FingerIndex >= 0 && FingerIndex < 5);
 		return CurrentFingerStates[FingerIndex];
 	}
-	inline const FVector& GetTipLocation(int FingerIndex) const
+	inline FVector GetTipLocation(int FingerIndex) const
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
 		return FilteredTipLocations[FingerIndex].GetOutput();
@@ -61,13 +32,13 @@ private:
 	inline void UpdateTipLocation(int FingerIndex, const FVector& InTipLocation, float DeltaTime)
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
-		FilteredTipLocations[FingerIndex].Update(InTipLocation, DeltaTime, LocationFilteringCutoff);
+		FilteredTipLocations[FingerIndex].Filter(InTipLocation, DeltaTime);
 	}
 
 private:
 	float LocationFilteringCutoff = 3.0f; // 3Hz
 
-	TArray<TOpenXRHandGestureLowPassFilter<FVector>> FilteredTipLocations;
+	TArray<FSimpleLowpassFilter> FilteredTipLocations;
 	TArray<EOpenXRGestureFingerState> CurrentFingerStates;
 };
 

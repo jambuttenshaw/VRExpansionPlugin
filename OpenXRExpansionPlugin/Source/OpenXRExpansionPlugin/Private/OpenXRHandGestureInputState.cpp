@@ -12,15 +12,15 @@
 
 FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 {
+	const UOpenXRGlobalSettings& XRSettings = *GetDefault<UOpenXRGlobalSettings>();
+	LocationFilteringCutoff = XRSettings.LowpassCutoffFrequency;
+
 	for (int i = 0; i < 5; i++)
 	{
 		// Cutoff and DeltaTime don't really matter, as they will be updated on the first tick
-		FilteredTipLocations.Emplace(FVector::ZeroVector, 1.0f, 0.01f);
+		FilteredTipLocations.Emplace(LocationFilteringCutoff);
 	}
 	CurrentFingerStates.AddDefaulted(5);
-
-	const UOpenXRGlobalSettings& XRSettings = *GetDefault<UOpenXRGlobalSettings>();
-	LocationFilteringCutoff = XRSettings.LowpassCutoffFrequency;
 }
 
 
