@@ -69,6 +69,9 @@ public:
 		return nullptr;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
+		static bool IsCurrentlyHandTracking();
+
 	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR", meta = (bIgnoreSelf = "true"))
 		static bool GetOpenXRHandPose(FBPOpenXRActionSkeletalData& HandPoseContainer, UOpenXRHandPoseComponent* HandPoseComponent, bool bGetMockUpPose = false);
 

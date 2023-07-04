@@ -8,6 +8,8 @@
 #include "CoreMinimal.h"
 #include "IXRTrackingSystem.h"
 
+#include "IHandTracker.h"
+
 #include "OpenXRHandGestureDevice.h"
 
 //General Log
@@ -166,6 +168,44 @@ void UOpenXRExpansionFunctionLibrary::GetXRMotionControllerType(FString& Trackin
 void UOpenXRExpansionFunctionLibrary::SetHandGestureDebugDrawingEnabled(bool bEnabled)
 {
 	FOpenXRHandGestureDevice::SetDebugDrawingEnabled(bEnabled);
+}
+
+bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()
+{
+	FName HandTrackerName("OpenXRHandTracking");
+	TArray<IHandTracker*> HandTrackers = IModularFeatures::Get().GetModularFeatureImplementations<IHandTracker>(IHandTracker::GetModularFeatureName());
+	IHandTracker* HandTracker = nullptr;
+	for (auto Itr : HandTrackers)
+	{
+		if (Itr->GetHandTrackerDeviceTypeName() == HandTrackerName)
+		{
+			HandTracker = Itr;
+			break;
+		}
+	}
+
+	TArray<IMotionController*> MotionControllers = IModularFeatures::Get().GetModularFeatureImplementations<IMotionController>(IMotionController::GetModularFeatureName());
+	IMotionController* MotionController = nullptr;
+	for (auto Itr : MotionControllers)
+	{
+		if (Itr->GetMotionControllerDeviceTypeName() == HandTrackerName)
+		{
+			MotionController = Itr;
+			break;
+		}
+	}
+
+	if (HandTracker && HandTracker->IsHandTrackingStateValid())
+	{
+		ETrackingStatus TrackingStatus = MotionController->GetControllerTrackingStatus(0, TEXT("Left"));
+		if (TrackingStatus == ETrackingStatus::Tracked)
+			return true;
+
+		TrackingStatus = MotionController->GetControllerTrackingStatus(0, TEXT("Right"));
+		return TrackingStatus == ETrackingStatus::Tracked;
+	}
+
+	return false;
 }
 
 bool UOpenXRExpansionFunctionLibrary::GetOpenXRHandPose(FBPOpenXRActionSkeletalData& HandPoseContainer, UOpenXRHandPoseComponent* HandPoseComponent, bool bGetMockUpPose)
