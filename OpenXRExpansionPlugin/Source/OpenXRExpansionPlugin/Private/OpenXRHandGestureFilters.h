@@ -16,6 +16,7 @@ public:
 };
 
 
+// Simple exponential lowpass filter implementation
 class FBaseLowpassFilter
 {
 public:
@@ -34,7 +35,7 @@ public:
 };
 
 
-
+// Simple exponential lowpass filter implementation, that takes a cutoff parameter given in Hz
 class FSimpleLowpassFilter : public ILowpassFilter
 {
 public:
@@ -55,6 +56,7 @@ private:
 };
 
 
+// One Euro Filter implementation, based upon implementation found here: https://gery.casiez.net/1euro/1efilter.cc
 class FOneEuroLowpassFilter : public ILowpassFilter
 {
 public:
@@ -85,7 +87,6 @@ private:
 	FVector CalculateAlphaTau(const FVector& InCutoff, float InDeltaTime);
 
 private:
-
 	FBaseLowpassFilter RawFilter;
 	FBaseLowpassFilter DeltaFilter;
 };

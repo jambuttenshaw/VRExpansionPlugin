@@ -67,9 +67,6 @@ struct TStructOpsTypeTraits< FBPXRSkeletalRepContainer > : public TStructOpsType
 };
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOpenXRGestureDetected, const FName &, GestureDetected, int32, GestureIndex, EVRSkeletalHandIndex, ActionHandType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOpenXRGestureEnded, const FName &, GestureEnded, int32, GestureIndex, EVRSkeletalHandIndex, ActionHandType);
-
 UCLASS(Blueprintable, meta = (BlueprintSpawnableComponent))
 class OPENXREXPANSIONPLUGIN_API UOpenXRHandPoseComponent : public UActorComponent
 {
@@ -88,25 +85,10 @@ public:
 		bDetectGestures = bNewDetectGestures;
 	}
 
-	UPROPERTY(BlueprintAssignable, Category = "VRGestures")
-		FOpenXRGestureDetected OnNewGestureDetected;
-
-	UPROPERTY(BlueprintAssignable, Category = "VRGestures")
-		FOpenXRGestureEnded OnGestureEnded;
-
 	// Known sequences
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "VRGestures")
 		UOpenXRGestureDatabase *GesturesDB;
 	 
-	UFUNCTION(BlueprintCallable, Category = "VRGestures")
-		bool SaveCurrentPose(FName RecordingName, EVRSkeletalHandIndex HandToSave = EVRSkeletalHandIndex::EActionHandIndex_Right);
-
-	UFUNCTION(BlueprintCallable, Category = "VRGestures", meta = (DisplayName = "DetectCurrentPose"))
-		bool K2_DetectCurrentPose(UPARAM(ref) FBPOpenXRActionSkeletalData& SkeletalAction, FOpenXRGesture & GestureOut);
-
-	// This version throws events
-	bool DetectCurrentPose(FBPOpenXRActionSkeletalData& SkeletalAction);
-
 	// Need this as I can't think of another way for an actor component to make sure it isn't on the server
 	inline bool IsLocallyControlled() const
 	{
