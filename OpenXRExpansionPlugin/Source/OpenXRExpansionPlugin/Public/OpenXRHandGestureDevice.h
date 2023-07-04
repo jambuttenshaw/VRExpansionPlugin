@@ -74,5 +74,5 @@ private:
 private:
 
 	// Debug tools
-	static inline bool bEnableDebugDrawing = true;
+	static inline bool bEnableDebugDrawing = false;
 };

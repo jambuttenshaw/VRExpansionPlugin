@@ -99,4 +99,8 @@ public:
 	// Returns failed if the openXR query failed (no interaction profile yet or openXR is not running)
 	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR", meta = (bIgnoreSelf = "true", ExpandEnumAsExecs = "Result"))
 		static void GetXRMotionControllerType(FString& TrackingSystemName, EBPOpenXRControllerDeviceType& DeviceType, EBPXRResultSwitch &Result);
+
+	// Enable/disable hand gesture debug drawing
+	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
+		static void SetHandGestureDebugDrawingEnabled(bool bEnabled);
 };

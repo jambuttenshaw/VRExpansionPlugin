@@ -8,6 +8,8 @@
 #include "CoreMinimal.h"
 #include "IXRTrackingSystem.h"
 
+#include "OpenXRHandGestureDevice.h"
+
 //General Log
 DEFINE_LOG_CATEGORY(OpenXRExpansionFunctionLibraryLog);
 
@@ -159,6 +161,11 @@ void UOpenXRExpansionFunctionLibrary::GetXRMotionControllerType(FString& Trackin
 
 	TrackingSystemName.Empty();
 	return;
+}
+
+void UOpenXRExpansionFunctionLibrary::SetHandGestureDebugDrawingEnabled(bool bEnabled)
+{
+	FOpenXRHandGestureDevice::SetDebugDrawingEnabled(bEnabled);
 }
 
 bool UOpenXRExpansionFunctionLibrary::GetOpenXRHandPose(FBPOpenXRActionSkeletalData& HandPoseContainer, UOpenXRHandPoseComponent* HandPoseComponent, bool bGetMockUpPose)
