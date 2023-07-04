@@ -41,27 +41,27 @@ class FOpenXRHandGestureSkeletalDataState
 public:
 	FOpenXRHandGestureSkeletalDataState();
 
-	EOpenXRGestureFingerState GetFingerState(int FingerIndex) const
+	inline EOpenXRGestureFingerState GetFingerState(int FingerIndex) const
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
 		return CurrentFingerStates[FingerIndex];
 	}
-
-private:
-	const FVector& GetTipLocation(int FingerIndex) const
+	inline const FVector& GetTipLocation(int FingerIndex) const
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
 		return FilteredTipLocations[FingerIndex].GetOutput();
 	}
-	void UpdateTipLocation(int FingerIndex, const FVector& InTipLocation, float DeltaTime)
-	{
-		check(FingerIndex >= 0 && FingerIndex < 5);
-		FilteredTipLocations[FingerIndex].Update(InTipLocation, DeltaTime, LocationFilteringCutoff);
-	}
-	void SetFingerState(int FingerIndex, EOpenXRGestureFingerState State)
+
+private:
+	inline void SetFingerState(int FingerIndex, EOpenXRGestureFingerState State)
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
 		CurrentFingerStates[FingerIndex] = State;
+	}
+	inline void UpdateTipLocation(int FingerIndex, const FVector& InTipLocation, float DeltaTime)
+	{
+		check(FingerIndex >= 0 && FingerIndex < 5);
+		FilteredTipLocations[FingerIndex].Update(InTipLocation, DeltaTime, LocationFilteringCutoff);
 	}
 
 private:

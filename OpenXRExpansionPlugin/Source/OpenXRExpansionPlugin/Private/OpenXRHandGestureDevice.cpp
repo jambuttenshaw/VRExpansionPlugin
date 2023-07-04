@@ -35,6 +35,11 @@ void FOpenXRHandGestureDevice::Tick(float DeltaTime)
 			RegisteredComponentState.UpdateCurrentState(DeltaTime);
 		}
 	}
+
+	if (bEnableDebugDrawing)
+	{
+		DebugDraw();
+	}
 }
 
 void FOpenXRHandGestureDevice::SendControllerEvents()
@@ -297,6 +302,56 @@ bool FOpenXRHandGestureDevice::GetGestureKey(const FOpenXRGesture& Gesture, cons
 	}
 
 	return false;
+}
+
+
+void FOpenXRHandGestureDevice::DebugDraw()
+{
+	for (FOpenXRHandGestureInputState& RegisteredComponentState : RegisteredComponents)
+	{
+		UOpenXRHandPoseComponent* HandPoseComponent = RegisteredComponentState.GetHandPoseComponent();
+		check(HandPoseComponent);
+
+		int SkeletalDataIndex = -1;
+		for (const FBPOpenXRActionSkeletalData& SkeletalAction : HandPoseComponent->HandSkeletalActions)
+		{
+			SkeletalDataIndex++;
+
+			if (!SkeletalAction.bHasValidData)
+			{
+				continue;
+			}
+
+			FOpenXRHandGestureSkeletalDataState& SkeletalDataState = RegisteredComponentState.GetSkeletalDataState(SkeletalDataIndex);
+
+			FTransform Correction(FQuat(FVector::UpVector, HALF_PI));
+			if (SkeletalAction.TargetHand == EVRSkeletalHandIndex::EActionHandIndex_Left)
+				Correction.Mirror(EAxis::None, EAxis::Y);
+			FTransform Transform = Correction * HandPoseComponent->GetOwner()->ActorToWorld();
+			
+			// Draw each finger
+			for (int Finger = 0; Finger < 5; Finger++)
+			{
+				FVector FingerTipLocation = SkeletalDataState.GetTipLocation(Finger);
+				FVector SphereCentre = Transform.TransformPosition(FingerTipLocation);
+
+				// Select color based on current finger state
+				FColor FingerColor;
+				switch (SkeletalDataState.GetFingerState(Finger))
+				{
+				case EOpenXRGestureFingerState::OXR_GESTURE_FINGER_CLOSED:		FingerColor = FColor::Red; break;
+				case EOpenXRGestureFingerState::OXR_GESTURE_FINGER_EXTENDED:	FingerColor = FColor::Green; break;
+				case EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED:		FingerColor = FColor::Blue; break;
+				case EOpenXRGestureFingerState::OXR_GESTURE_FINGER_NONE:		
+				case EOpenXRGestureFingerState::OXR_GESTURE_FINGER_IGNORED:
+				default:														FingerColor = FColor(127U, 127U, 127U); break;
+				}
+
+				// Debug draw
+				DrawDebugSphere(HandPoseComponent->GetWorld(), SphereCentre, 1.0f, 12, FingerColor);
+			}
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE 
