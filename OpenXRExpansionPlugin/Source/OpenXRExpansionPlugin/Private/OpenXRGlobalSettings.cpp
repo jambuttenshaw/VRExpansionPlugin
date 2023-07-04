@@ -5,7 +5,14 @@
 
 UOpenXRGlobalSettings::UOpenXRGlobalSettings(const FObjectInitializer& ObjectInitializer)
 {
-	LowpassCutoffFrequency		= 4.0f;
+	// Filtering
+	SimpleLowpassCutoffFrequency = 4.0f;
+
+	bUseOneEuroLowpassFilter = false;
+
+	MinimumCutoff = 0.9f;
+	DeltaCutoff = 1.0f;
+	CutoffSlope = 0.007f;
 
 
 	ExtendedThresholdThumb		= 12.0f;

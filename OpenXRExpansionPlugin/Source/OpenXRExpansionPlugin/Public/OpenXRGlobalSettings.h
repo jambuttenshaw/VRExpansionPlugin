@@ -15,9 +15,18 @@ public:
 	UOpenXRGlobalSettings(const FObjectInitializer& ObjectInitializer);
 
 
-	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures")
-		float LowpassCutoffFrequency;
+	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|Filtering")
+		float SimpleLowpassCutoffFrequency;
 
+	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|Filtering")
+		bool bUseOneEuroLowpassFilter;
+
+	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|Filtering")
+		float MinimumCutoff;
+	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|Filtering")
+		float DeltaCutoff;
+	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|Filtering")
+		float CutoffSlope;
 
 	// Gesture Detection Thresholds
 	UPROPERTY(config, BlueprintReadWrite, EditAnywhere, Category = "HandGestures|FingerStateThresholds|Extended")

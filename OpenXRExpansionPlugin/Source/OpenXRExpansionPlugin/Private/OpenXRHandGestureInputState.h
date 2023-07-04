@@ -20,7 +20,7 @@ public:
 	inline FVector GetTipLocation(int FingerIndex) const
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
-		return FilteredTipLocations[FingerIndex].GetOutput();
+		return FilteredTipLocations[FingerIndex]->GetOutput();
 	}
 
 private:
@@ -32,13 +32,11 @@ private:
 	inline void UpdateTipLocation(int FingerIndex, const FVector& InTipLocation, float DeltaTime)
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
-		FilteredTipLocations[FingerIndex].Filter(InTipLocation, DeltaTime);
+		FilteredTipLocations[FingerIndex]->Filter(InTipLocation, DeltaTime);
 	}
 
 private:
-	float LocationFilteringCutoff = 3.0f; // 3Hz
-
-	TArray<FSimpleLowpassFilter> FilteredTipLocations;
+	TArray<TSharedPtr<ILowpassFilter>> FilteredTipLocations;
 	TArray<EOpenXRGestureFingerState> CurrentFingerStates;
 };
 
