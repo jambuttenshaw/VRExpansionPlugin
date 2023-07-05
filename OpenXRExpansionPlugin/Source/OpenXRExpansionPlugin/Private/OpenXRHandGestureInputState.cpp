@@ -136,7 +136,6 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime, bool bRes
 	// Registered component should be validated prior to attempting to update its state
 	check(IsValid());
 
-
 	int SkeletalActionIndex = -1;
 	for (const FBPOpenXRActionSkeletalData& SkeletalAction : HandPoseComponent->HandSkeletalActions)
 	{
@@ -184,7 +183,7 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime, bool bRes
 			if (i > 0)
 			{
 				float PinchedThreshold;
-				UOpenXRGlobalSettings::GetPinchedThreshold(i, PinchedThreshold);
+				verify(UOpenXRGlobalSettings::GetPinchedThreshold(i, PinchedThreshold));
 				if (FVector::DistSquared(CurrentState.GetTipLocation(0), TipLocation) < PinchedThreshold * PinchedThreshold)
 				{
 					CurrentState.SetFingerState(0, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_PINCHED);
@@ -196,8 +195,8 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime, bool bRes
 
 			// TODO: Investigate other ways of doing this, potentially rotation of base joint of fingers?
 			float ExtendedThreshold, ClosedThreshold;
-			UOpenXRGlobalSettings::GetExtendedThreshold(i, ExtendedThreshold);
-			UOpenXRGlobalSettings::GetClosedThreshold(i, ClosedThreshold);
+			verify(UOpenXRGlobalSettings::GetExtendedThreshold(i, ExtendedThreshold));
+			verify(UOpenXRGlobalSettings::GetClosedThreshold(i, ClosedThreshold));
 
 			if (TipLocation.SquaredLength() > ExtendedThreshold * ExtendedThreshold)
 				CurrentState.SetFingerState(i, EOpenXRGestureFingerState::OXR_GESTURE_FINGER_EXTENDED);

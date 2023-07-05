@@ -6,31 +6,31 @@
 UOpenXRGlobalSettings::UOpenXRGlobalSettings(const FObjectInitializer& ObjectInitializer)
 {
 	// Filtering
-	SimpleLowpassCutoffFrequency = 4.0f;
+	SimpleLowpassCutoffFrequency = 2.0f;
 
 	bUseOneEuroLowpassFilter = false;
 
 	MinimumCutoff = 0.9f;
 	DeltaCutoff = 1.0f;
-	CutoffSlope = 0.007f;
+	CutoffSlope = 0.1f;
 
+	// Finger state thresholds
+	ExtendedThresholdThumb		= 13.0f;
+	ExtendedThresholdIndex		= 14.0f;
+	ExtendedThresholdMiddle		= 14.0f;
+	ExtendedThresholdRing		= 14.0f;
+	ExtendedThresholdLittle		= 13.0f;
 
-	ExtendedThresholdThumb		= 12.0f;
-	ExtendedThresholdIndex		= 12.0f;
-	ExtendedThresholdMiddle		= 12.0f;
-	ExtendedThresholdRing		= 12.0f;
-	ExtendedThresholdLittle		= 12.0f;
-
-	ClosedThresholdThumb		= 11.0f;
+	ClosedThresholdThumb		= 11.5f;
 	ClosedThresholdIndex		= 11.0f;
 	ClosedThresholdMiddle		= 11.0f;
 	ClosedThresholdRing			= 11.0f;
 	ClosedThresholdLittle		= 11.0f;
 
-	PinchedThresholdIndex		= 1.0f;
-	PinchedThresholdMiddle		= 1.0f;
-	PinchedThresholdRing		= 1.0f;
-	PinchedThresholdLittle		= 1.0f;
+	PinchedThresholdIndex		= 1.1f;
+	PinchedThresholdMiddle		= 1.3f;
+	PinchedThresholdRing		= 1.3f;
+	PinchedThresholdLittle		= 1.3f;
 }
 
 bool UOpenXRGlobalSettings::GetExtendedThreshold(int FingerIndex, float& Threshold)
