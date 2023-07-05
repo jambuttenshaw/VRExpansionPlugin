@@ -12,6 +12,8 @@ class FOpenXRHandGestureSkeletalDataState
 public:
 	FOpenXRHandGestureSkeletalDataState();
 
+	void ResetFilters();
+
 	inline EOpenXRGestureFingerState GetFingerState(int FingerIndex) const
 	{
 		check(FingerIndex >= 0 && FingerIndex < 5);
@@ -65,7 +67,7 @@ public:
 
 	bool IsValid() const;
 
-	void UpdateCurrentState(float DeltaTime);
+	void UpdateCurrentState(float DeltaTime, bool bResetFilters = false);
 
 private:
 	FPlatformUserId PlatformUserId;

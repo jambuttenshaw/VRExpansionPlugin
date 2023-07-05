@@ -172,6 +172,16 @@ void UOpenXRExpansionFunctionLibrary::SetHandGestureDebugDrawingEnabled(bool bEn
 
 bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()
 {
+	// This is more robust than FOpenXRHMD::GetMotionControllerData,
+	// as that will return EXRVisualType::Hands if hand tracking is enabled, even if it isn't CURRENTLY tracking
+	// e.g, the player is temporarly using controllers in a hand-tracking supported game
+	//
+	// See OpenXRHandTracking.cpp:502-515,
+	// it returns the same thing for IsHandTrackingSupportedByDevice and IsHandTrackingStateValid,
+	// neither of these are to the effect of 'IsCurrentlyHandTracking'
+
+
+	// Get the OpenXRHandTracking implementation to see if hand tracking is enabled
 	FName HandTrackerName("OpenXRHandTracking");
 	TArray<IHandTracker*> HandTrackers = IModularFeatures::Get().GetModularFeatureImplementations<IHandTracker>(IHandTracker::GetModularFeatureName());
 	IHandTracker* HandTracker = nullptr;
@@ -184,19 +194,21 @@ bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()
 		}
 	}
 
-	TArray<IMotionController*> MotionControllers = IModularFeatures::Get().GetModularFeatureImplementations<IMotionController>(IMotionController::GetModularFeatureName());
-	IMotionController* MotionController = nullptr;
-	for (auto Itr : MotionControllers)
-	{
-		if (Itr->GetMotionControllerDeviceTypeName() == HandTrackerName)
-		{
-			MotionController = Itr;
-			break;
-		}
-	}
-
 	if (HandTracker && HandTracker->IsHandTrackingStateValid())
 	{
+		// We need to then get the OpenxRHandTracking object as a motion controller to check if its currently tracking
+		TArray<IMotionController*> MotionControllers = IModularFeatures::Get().GetModularFeatureImplementations<IMotionController>(IMotionController::GetModularFeatureName());
+		IMotionController* MotionController = nullptr;
+
+		for (auto Itr : MotionControllers)
+		{
+			if (Itr->GetMotionControllerDeviceTypeName() == HandTrackerName)
+			{
+				MotionController = Itr;
+				break;
+			}
+		}
+
 		ETrackingStatus TrackingStatus = MotionController->GetControllerTrackingStatus(0, TEXT("Left"));
 		if (TrackingStatus == ETrackingStatus::Tracked)
 			return true;

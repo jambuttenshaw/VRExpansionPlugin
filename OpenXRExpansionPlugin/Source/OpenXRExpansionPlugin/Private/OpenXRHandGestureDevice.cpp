@@ -3,6 +3,8 @@
 #include "OpenXRHandGestures.h"
 #include "OpenXRHandPoseComponent.h"
 
+#include "OpenXRExpansionFunctionLibrary.h"
+
 #include "Modules/ModuleManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 
@@ -26,14 +28,34 @@ FOpenXRHandGestureDevice::~FOpenXRHandGestureDevice()
 
 void FOpenXRHandGestureDevice::Tick(float DeltaTime)
 {
+	// Always clean up invalid components first
 	CleanupInvalidComponents();
+
+
+	bool bResetFilters = false;
+
+	HandTrackingCheckTimer += DeltaTime;
+	if (HandTrackingCheckTimer >= HandTrackingCheckInterval)
+	{
+		HandTrackingCheckTimer = 0.0f;
+
+		bool CurrentlyHandTracking = UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking();
+		if (bIsCurrentlyHandTracking != CurrentlyHandTracking)
+		{
+			bIsCurrentlyHandTracking = CurrentlyHandTracking;
+
+			// Reset filters if hand tracking has just begun
+			bResetFilters = bIsCurrentlyHandTracking;
+		}
+	}
+
+	if (!bIsCurrentlyHandTracking)
+		return;
 
 	for (FOpenXRHandGestureInputState& RegisteredComponentState : RegisteredComponents)
 	{
-		if (RegisteredComponentState.IsValid()) // Should always be true: cleanup has just been performed
-		{
-			RegisteredComponentState.UpdateCurrentState(DeltaTime);
-		}
+		check(RegisteredComponentState.IsValid()); // Should always be true: cleanup has just been performed
+		RegisteredComponentState.UpdateCurrentState(DeltaTime, bResetFilters);
 	}
 
 	if (bEnableDebugDrawing)
@@ -44,6 +66,9 @@ void FOpenXRHandGestureDevice::Tick(float DeltaTime)
 
 void FOpenXRHandGestureDevice::SendControllerEvents()
 {
+	if (!bIsCurrentlyHandTracking)
+		return;
+
 	// Check for gestures
 	for (FOpenXRHandGestureInputState& RegisteredComponentState : RegisteredComponents)
 	{

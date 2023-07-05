@@ -63,6 +63,12 @@ private:
 private:
 	TSharedPtr<FGenericApplicationMessageHandler> MessageHandler;
 
+	// Only update this device if currently hand tracking
+	bool bIsCurrentlyHandTracking = false;
+
+	float HandTrackingCheckInterval = 2.0f;
+	float HandTrackingCheckTimer = 0.0f;
+
 	// All components currently registered with the device to process hand gestures
 	TArray<FOpenXRHandGestureInputState> RegisteredComponents;
 

@@ -34,6 +34,14 @@ FOpenXRHandGestureSkeletalDataState::FOpenXRHandGestureSkeletalDataState()
 	CurrentFingerStates.AddDefaulted(5);
 }
 
+void FOpenXRHandGestureSkeletalDataState::ResetFilters()
+{
+	for (const TSharedPtr<ILowpassFilter>& Filter : FilteredTipLocations)
+	{
+		Filter->Reset();
+	}
+}
+
 
 FOpenXRHandGestureInputState::FOpenXRHandGestureInputState(UOpenXRHandPoseComponent* InHandPoseComponent)
 {
@@ -123,7 +131,7 @@ void FOpenXRHandGestureInputState::SetGestureButtonState(const FName& GestureNam
 	GestureButtonStates[GestureName] = State;
 }
 
-void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
+void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime, bool bResetFilters)
 {
 	// Registered component should be validated prior to attempting to update its state
 	check(IsValid());
@@ -132,6 +140,12 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 	int SkeletalActionIndex = -1;
 	for (const FBPOpenXRActionSkeletalData& SkeletalAction : HandPoseComponent->HandSkeletalActions)
 	{
+		SkeletalActionIndex++;
+		FOpenXRHandGestureSkeletalDataState& CurrentState = SkeletalDataStates[SkeletalActionIndex];
+
+		if (bResetFilters)
+			CurrentState.ResetFilters();
+
 		if (!SkeletalAction.bHasValidData)
 		{
 			continue;
@@ -141,9 +155,7 @@ void FOpenXRHandGestureInputState::UpdateCurrentState(float DeltaTime)
 			UE_LOG(LogHandGesture, Warning, TEXT("Invalid skeletal transform count!"));
 			continue;
 		}
-
-		SkeletalActionIndex++;
-		FOpenXRHandGestureSkeletalDataState& CurrentState = SkeletalDataStates[SkeletalActionIndex];
+		
 
 		int32 FingerMap[5] =
 		{
