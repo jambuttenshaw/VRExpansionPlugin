@@ -9,6 +9,7 @@
 #include "IXRTrackingSystem.h"
 #include "IHandTracker.h"
 
+#include "IOpenXRExpansionPlugin.h"
 #include "OpenXRHandGestureDevice.h"
 
 //General Log
@@ -164,9 +165,18 @@ void UOpenXRExpansionFunctionLibrary::GetXRMotionControllerType(FString& Trackin
 	return;
 }
 
-void UOpenXRExpansionFunctionLibrary::SetHandGestureDebugDrawingEnabled(bool bEnabled)
+void UOpenXRExpansionFunctionLibrary::DrawDebugHandGestures()
 {
-	FOpenXRHandGestureDevice::SetDebugDrawingEnabled(bEnabled);
+	if (IOpenXRExpansionPluginModule::IsAvailable())
+	{
+		IOpenXRExpansionPluginModule& OpenXRExpansionPluginModule = IOpenXRExpansionPluginModule::Get();
+		TSharedPtr<FOpenXRHandGestureDevice> HandGestureDevice = StaticCastSharedPtr<FOpenXRHandGestureDevice>(OpenXRExpansionPluginModule.GetInputDevice());
+
+		if (HandGestureDevice)
+		{
+			HandGestureDevice->DebugDraw();
+		}
+	}
 }
 
 bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()

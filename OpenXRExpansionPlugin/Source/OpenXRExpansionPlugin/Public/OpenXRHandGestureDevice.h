@@ -34,15 +34,14 @@ public:
 
 	virtual void SetChannelValue(int32 ControllerId, FForceFeedbackChannelType ChannelType, float Value) override;
 	virtual void SetChannelValues(int32 ControllerId, const FForceFeedbackValues& values) override;
+	virtual bool SupportsForceFeedback(int32 ControllerId) override { return false; }
 
-	// end IInputDevice implementation
+	// End IInputDevice implementation
 
 	// Register a new component with the device
 	bool RegisterComponent(class UOpenXRHandPoseComponent* HandPoseComponent);
 
-public:
-	inline static void SetDebugDrawingEnabled(bool bEnabled) { bEnableDebugDrawing = bEnabled; }
-
+	void DebugDraw();
 private:
 
 	// Searches for all gesture databases and constructs key names from them
@@ -58,7 +57,6 @@ private:
 	bool DoesGestureApplyToHand(const EOpenXRGestureHand& GestureHand, const EVRSkeletalHandIndex& Hand) const;
 	bool GetGestureKey(const FOpenXRGesture& Gesture, const EVRSkeletalHandIndex& TargetHand, FKey& GestureKey);
 
-	void DebugDraw();
 
 private:
 	TSharedPtr<FGenericApplicationMessageHandler> MessageHandler;
@@ -76,9 +74,4 @@ private:
 	TMap<FName, FKey> LeftKeyMappings;
 	// Right Hand Gestures mapped to the keys they will trigger
 	TMap<FName, FKey> RightKeyMappings;
-
-private:
-
-	// Debug tools
-	static inline bool bEnableDebugDrawing = false;
 };

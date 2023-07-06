@@ -109,8 +109,8 @@ public:
 		static void GetXRMotionControllerType(FString& TrackingSystemName, EBPOpenXRControllerDeviceType& DeviceType, EBPXRResultSwitch &Result);
 
 	// Enable/disable hand gesture debug drawing
-	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
-		static void SetHandGestureDebugDrawingEnabled(bool bEnabled);
+	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR|Debug")
+		static void DrawDebugHandGestures();
 
 private:
 	static bool IsControllerInSight_Helper(UObject* WorldContextObject, EControllerHand TargetHand, bool CheckHandTracking);
