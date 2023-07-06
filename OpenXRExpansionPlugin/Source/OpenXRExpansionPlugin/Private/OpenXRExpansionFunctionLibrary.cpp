@@ -7,7 +7,6 @@
 #include <openxr/openxr.h>
 #include "CoreMinimal.h"
 #include "IXRTrackingSystem.h"
-
 #include "IHandTracker.h"
 
 #include "OpenXRHandGestureDevice.h"
@@ -199,7 +198,6 @@ bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()
 		// We need to then get the OpenxRHandTracking object as a motion controller to check if its currently tracking
 		TArray<IMotionController*> MotionControllers = IModularFeatures::Get().GetModularFeatureImplementations<IMotionController>(IMotionController::GetModularFeatureName());
 		IMotionController* MotionController = nullptr;
-
 		for (auto Itr : MotionControllers)
 		{
 			if (Itr->GetMotionControllerDeviceTypeName() == HandTrackerName)
@@ -219,6 +217,65 @@ bool UOpenXRExpansionFunctionLibrary::IsCurrentlyHandTracking()
 
 	return false;
 }
+
+bool UOpenXRExpansionFunctionLibrary::IsControllerInSight(UObject* WorldContextObject, EControllerHand TargetHand)
+{
+	return IsControllerInSight_Helper(WorldContextObject, TargetHand, false);
+}
+
+bool UOpenXRExpansionFunctionLibrary::IsHandInSight(UObject* WorldContextObject, EControllerHand TargetHand)
+{
+	return IsControllerInSight_Helper(WorldContextObject, TargetHand, true);
+}
+
+bool UOpenXRExpansionFunctionLibrary::IsControllerInSight_Helper(UObject* WorldContextObject, EControllerHand TargetHand, bool CheckHandTracking)
+{
+	if (TargetHand == EControllerHand::AnyHand)
+		return IsControllerInSight_Helper(WorldContextObject, EControllerHand::Left,  CheckHandTracking)
+		    || IsControllerInSight_Helper(WorldContextObject, EControllerHand::Right, CheckHandTracking);
+
+	FName MotionSource;
+	switch (TargetHand)
+	{
+	case EControllerHand::Left:		MotionSource = FName("Left");	break;
+	case EControllerHand::Right:	MotionSource = FName("Right");	break;
+	default:
+		return false; // don't care about any other types of scontroller hand
+	}
+
+	FName MotionControllerName(CheckHandTracking ? "OpenXRHandTracking" : "OpenXR");
+	TArray<IMotionController*> MotionControllers = IModularFeatures::Get().GetModularFeatureImplementations<IMotionController>(IMotionController::GetModularFeatureName());
+	IMotionController* MotionController = nullptr;
+	for (auto Itr : MotionControllers)
+	{
+		if (Itr->GetMotionControllerDeviceTypeName() == MotionControllerName)
+		{
+			MotionController = Itr;
+			break;
+		}
+	}
+
+	if (MotionController)
+	{
+		float WorldToMeters = WorldContextObject->GetWorld() ? WorldContextObject->GetWorld()->GetWorldSettings()->WorldToMeters : 100.0f;
+		FVector OutPosition;
+		FRotator OutRotation;
+		bool Success = MotionController->GetControllerOrientationAndPosition(0, MotionSource, OutRotation, OutPosition, WorldToMeters);
+
+		ETrackingStatus TrackingStatus = MotionController->GetControllerTrackingStatus(0, MotionSource);
+		Success = TrackingStatus == ETrackingStatus::Tracked;
+
+		// TODO: Unsure if this is the case for all headsets, but for Meta Quest Pro a controller/hand that is out of sight will reside at the origin of the tracking space
+		// It is extremely unlikely (practically impossible) that a user could exactly place their hand at exactly the origin
+		bool bIsZero = OutPosition.Equals(FVector::ZeroVector, KINDA_SMALL_NUMBER);
+		// if it is not zero, then it is out of sight
+		return !bIsZero;
+
+	}
+
+	return false;
+}
+
 
 bool UOpenXRExpansionFunctionLibrary::GetOpenXRHandPose(FBPOpenXRActionSkeletalData& HandPoseContainer, UOpenXRHandPoseComponent* HandPoseComponent, bool bGetMockUpPose)
 {

@@ -229,6 +229,15 @@ void FOpenXRHandGestureDevice::CheckForGestures(FOpenXRHandGestureInputState& Re
 	// Should already have been validated before calling this function
 	check(HandPoseComponent);
 
+	// Check that this hand is actually in sight of the HMD
+	// TODO: If the HandPoseComponent has multiple HandSkeletalActions, will they necessarily all be the same hand?
+	if (!HandPoseComponent->HandSkeletalActions.Num())
+		return;
+	EControllerHand TargetHand = HandPoseComponent->HandSkeletalActions[0].TargetHand == EVRSkeletalHandIndex::EActionHandIndex_Left
+		? EControllerHand::Left : EControllerHand::Right;
+	if (!UOpenXRExpansionFunctionLibrary::IsHandInSight(HandPoseComponent, TargetHand))
+		return;
+
 	// Check we definitely want to detect gestures on this component, and that the gesture db is valid
 	if (!HandPoseComponent->bDetectGestures)
 		return;

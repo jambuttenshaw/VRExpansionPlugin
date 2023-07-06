@@ -72,6 +72,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
 		static bool IsCurrentlyHandTracking();
 
+	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
+		static bool IsControllerInSight(UObject* WorldContextObject, EControllerHand TargetHand);
+	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
+		static bool IsHandInSight(UObject* WorldContextObject, EControllerHand TargetHand);
+
 	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR", meta = (bIgnoreSelf = "true"))
 		static bool GetOpenXRHandPose(FBPOpenXRActionSkeletalData& HandPoseContainer, UOpenXRHandPoseComponent* HandPoseComponent, bool bGetMockUpPose = false);
 
@@ -106,4 +111,7 @@ public:
 	// Enable/disable hand gesture debug drawing
 	UFUNCTION(BlueprintCallable, Category = "VRExpansionFunctions|OpenXR")
 		static void SetHandGestureDebugDrawingEnabled(bool bEnabled);
+
+private:
+	static bool IsControllerInSight_Helper(UObject* WorldContextObject, EControllerHand TargetHand, bool CheckHandTracking);
 };
